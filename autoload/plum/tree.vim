@@ -1,14 +1,22 @@
-function! GetCharUnderCursor()
+function! plum#tree#Directory()
+  return s:PlumTree_DirectoryAction()
+endfunction
+
+function! plum#tree#File()
+  return s:PlumTree_FileAction()
+endfunction
+
+function! s:GetCharUnderCursor()
   return matchstr(getline('.'), '\%' . col('.') . 'c.')
 endfunction
 
-function! IsTrunkChar(c)
+function! s:IsTrunkChar(c)
   return a:c ==# '├' ||
        \ a:c ==# '│' ||
        \ a:c ==# '└'
 endfunction
 
-function! TreePathUnderCursor()
+function! s:TreePathUnderCursor()
   let original = winsaveview()
   let sep = ''
   let path = ''
@@ -25,13 +33,13 @@ function! TreePathUnderCursor()
     endif
 
     let lastColPos = []
-    while !IsTrunkChar(GetCharUnderCursor()) && lastColPos !=# getpos('.')
+    while !s:IsTrunkChar(s:GetCharUnderCursor()) && lastColPos !=# getpos('.')
       let lastColPos = getpos('.')
       execute 'normal! h'
     endwhile
 
     let lastRowPos = []
-    while IsTrunkChar(GetCharUnderCursor()) && lastRowPos !=# getpos('.')
+    while s:IsTrunkChar(s:GetCharUnderCursor()) && lastRowPos !=# getpos('.')
       let lastRowPos = getpos('.')
       execute 'normal! k'
     endwhile
@@ -40,37 +48,37 @@ function! TreePathUnderCursor()
   return path
 endfunction
 
-function! MatchTreePathContent(ctx)
+function! s:MatchTreePathContent(ctx)
   let ctx = a:ctx
   if ctx.mode !=# 'i' || ctx.mode !=# 'n'
-    let ctx.match = TreePathUnderCursor()
+    let ctx.match = s:TreePathUnderCursor()
     return 1
   endif
   return 0
 endfunction
 
-function! MatchTreeDir(ctx)
+function! s:MatchTreeDir(ctx)
   return plum#matchers#MatchFso(a:ctx, function('plum#system#DirExists'),
-        \ function('MatchTreePathContent'))
+        \ function('s:MatchTreePathContent'))
 endfunction
 
-function! MatchTreeFile(ctx)
+function! s:MatchTreeFile(ctx)
   return plum#matchers#MatchFso(a:ctx, function('plum#system#FileExists'),
-        \ function('MatchTreePathContent'))
+        \ function('s:MatchTreePathContent'))
 endfunction
 
-function! PlumTree_FileAction()
+function! s:PlumTree_FileAction()
   return {
         \ 'name' : 'PlumTreeFileAction',
-        \ 'matcher' : function('MatchTreeFile'),
+        \ 'matcher' : function('s:MatchTreeFile'),
         \ 'action' : function('plum#actions#File'),
         \ }
 endfunction
 
-function! PlumTree_DirectoryAction()
+function! s:PlumTree_DirectoryAction()
   return {
         \ 'name' : 'PlumTreeDirectoryAction',
-        \ 'matcher' : function('MatchTreeDir'),
+        \ 'matcher' : function('s:MatchTreeDir'),
         \ 'action' : function('plum#actions#Dir'),
         \ }
 endfunction
