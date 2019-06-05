@@ -1,19 +1,17 @@
-function! plum#tree#Directory()
-  return s:PlumTree_DirectoryAction()
+function! plum#tree#OpenFso()
+  return plum#CreateAction(
+        \ 'plum#tree#OpenFso'
+        \ function('plum#tree#IsTreePath'),
+        \ function('plum#fso#ApplyOpenFso'))
 endfunction
 
-function! plum#tree#File()
-  return s:PlumTree_FileAction()
-endfunction
-
-function! s:GetCharUnderCursor()
-  return matchstr(getline('.'), '\%' . col('.') . 'c.')
-endfunction
-
-function! s:IsTrunkChar(c)
-  return a:c ==# '├' ||
-       \ a:c ==# '│' ||
-       \ a:c ==# '└'
+function! plum#tree#IsTreePath(context)
+  if context.mode ==# 'i' || context.mode ==# 'n'
+    let path = s:TreePathUnderCursor()
+    let context.match = plum#fso#ResolveFso(path)
+    return context.match !=# ''
+  endif
+  return 0
 endfunction
 
 function! s:TreePathUnderCursor()
@@ -48,37 +46,12 @@ function! s:TreePathUnderCursor()
   return path
 endfunction
 
-function! s:MatchTreePathContent(ctx)
-  let ctx = a:ctx
-  if ctx.mode !=# 'i' || ctx.mode !=# 'n'
-    let ctx.match = s:TreePathUnderCursor()
-    return 1
-  endif
-  return 0
+function! s:GetCharUnderCursor()
+  return matchstr(getline('.'), '\%' . col('.') . 'c.')
 endfunction
 
-function! s:MatchTreeDir(ctx)
-  return plum#matchers#MatchFso(a:ctx, function('plum#system#DirExists'),
-        \ function('s:MatchTreePathContent'))
-endfunction
-
-function! s:MatchTreeFile(ctx)
-  return plum#matchers#MatchFso(a:ctx, function('plum#system#FileExists'),
-        \ function('s:MatchTreePathContent'))
-endfunction
-
-function! s:PlumTree_FileAction()
-  return {
-        \ 'name' : 'PlumTreeFileAction',
-        \ 'matcher' : function('s:MatchTreeFile'),
-        \ 'action' : function('plum#actions#File'),
-        \ }
-endfunction
-
-function! s:PlumTree_DirectoryAction()
-  return {
-        \ 'name' : 'PlumTreeDirectoryAction',
-        \ 'matcher' : function('s:MatchTreeDir'),
-        \ 'action' : function('plum#actions#Dir'),
-        \ }
+function! s:IsTrunkChar(c)
+  return a:c ==# '├' ||
+       \ a:c ==# '│' ||
+       \ a:c ==# '└'
 endfunction
