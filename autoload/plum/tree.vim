@@ -6,6 +6,7 @@ function! plum#tree#OpenFso()
 endfunction
 
 function! plum#tree#IsTreePath(context)
+  let context = a:context
   if context.mode ==# 'i' || context.mode ==# 'n'
     let path = s:TreePathUnderCursor()
     let context.match = plum#fso#ResolveFso(path)
