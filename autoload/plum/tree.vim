@@ -1,6 +1,6 @@
 function! plum#tree#OpenFso()
   return plum#CreateAction(
-        \ 'plum#tree#OpenFso'
+        \ 'plum#tree#OpenFso',
         \ function('plum#tree#IsTreePath'),
         \ function('plum#fso#ApplyOpenFso'))
 endfunction
